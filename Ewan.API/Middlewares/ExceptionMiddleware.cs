@@ -88,9 +88,16 @@ namespace Ewan.API.Middlewares
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
 
-            var response = _env.IsDevelopment()
-                ? new ApiErrorResponse(statusCode, message, ex.ToString())
-                : new ApiErrorResponse(statusCode, message);
+            ApiErrorResponse response;
+
+            if (_env.IsDevelopment() && statusCode == StatusCodes.Status500InternalServerError)
+            {
+                response = new ApiErrorResponse(statusCode, message, ex.Message);
+            }
+            else
+            {
+                response = new ApiErrorResponse(statusCode, message);
+            }
 
             await WriteJsonResponse(context, response);
 
@@ -101,7 +108,8 @@ namespace Ewan.API.Middlewares
         {
             var options = new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
             };
 
             await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));

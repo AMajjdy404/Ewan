@@ -1,6 +1,15 @@
 ﻿using Ewan.API.Errors;
+using Ewan.Application.Features.Auth.Commands.AppRefreshToken;
+using Ewan.Application.Features.Auth.Commands.LoginAppUser;
+using Ewan.Application.Features.Auth.Commands.LoginClient;
+using Ewan.Application.Features.Auth.Commands.Logout;
+using Ewan.Application.Features.Auth.Commands.LogoutAllDevices;
+using Ewan.Application.Features.Auth.Commands.LogoutOtherDevices;
+using Ewan.Application.Features.Auth.Commands.RegisterClient.Ewan.Application.Features.Auth.Commands.RegisterClient;
+using Ewan.Application.Features.Auth.Commands.RequestClientPasswordReset;
+using Ewan.Application.Features.Auth.Commands.ResetClientPassword;
 using Ewan.Core.Models.Dtos;
-using Ewan.Core.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,48 +20,54 @@ namespace Ewan.API.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
+        private readonly IMediator _mediator;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IMediator mediator)
         {
-            _authService = authService;
+            _mediator = mediator;
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
-            var result = await _authService.LoginAppUserAsync(request, GetIpAddress());
+            var command = new LoginAppUserCommand(request, GetIpAddress());
+            var result = await _mediator.Send(command);
+
             return Ok(new ApiResponse(200, "Login successful.", result));
         }
 
         [HttpPost("client-login")]
         public async Task<IActionResult> ClientLogin([FromBody] ClientLoginRequestDto request)
         {
-            var result = await _authService.LoginClientAsync(request, GetIpAddress());
+            var command = new LoginClientCommand(request, GetIpAddress());
+            var result = await _mediator.Send(command);
+
             return Ok(new ApiResponse(200, "Client login successful.", result));
         }
 
         [HttpPost("client-register")]
         public async Task<IActionResult> ClientRegister([FromBody] RegisterClientDto request)
         {
-            var result = await _authService.RegisterClientAsync(request, GetIpAddress());
+            var command = new RegisterClientCommand(request, GetIpAddress());
+            var result = await _mediator.Send(command);
+
             return Ok(new ApiResponse(200, "Client registered successfully.", result));
         }
 
-        [HttpPost("client-forgot-password")]
-        public async Task<IActionResult> ClientForgotPassword([FromBody] ForgotClientPasswordDto request)
+        [HttpPost("client-forget-password")]
+        public async Task<IActionResult> ClientForgetPassword([FromBody] ForgotClientPasswordDto request)
         {
-            await _authService.RequestClientPasswordResetAsync(request, GetIpAddress());
+            var command = new RequestClientPasswordResetCommand(request, GetIpAddress());
+            await _mediator.Send(command);
 
-            return Ok(new ApiResponse(
-                200,
-                "If the account exists, a reset email has been sent."));
+            return Ok(new ApiResponse(200, "If the account exists, a reset email has been sent."));
         }
 
         [HttpPost("client-reset-password")]
         public async Task<IActionResult> ClientResetPassword([FromBody] ResetClientPasswordDto request)
         {
-            await _authService.ResetClientPasswordAsync(request, GetIpAddress());
+            var command = new ResetClientPasswordCommand(request, GetIpAddress());
+            await _mediator.Send(command);
 
             return Ok(new ApiResponse(200, "Password reset successfully."));
         }
@@ -60,14 +75,17 @@ namespace Ewan.API.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)
         {
-            var result = await _authService.RefreshTokenAsync(request, GetIpAddress());
+            var command = new RefreshTokenCommand(request, GetIpAddress());
+            var result = await _mediator.Send(command);
+
             return Ok(new ApiResponse(200, "Token refreshed successfully.", result));
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequestDto request)
         {
-            await _authService.LogoutAsync(request.RefreshToken, GetIpAddress());
+            var command = new LogoutCommand(request.RefreshToken, GetIpAddress());
+            await _mediator.Send(command);
 
             return Ok(new ApiResponse(200, "Logged out successfully."));
         }
@@ -82,7 +100,8 @@ namespace Ewan.API.Controllers
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(userType))
                 return Unauthorized(new ApiResponse(401, "Unauthorized"));
 
-            await _authService.LogoutAllDevicesAsync(userId, userType, GetIpAddress());
+            var command = new LogoutAllDevicesCommand(userId, userType, GetIpAddress());
+            await _mediator.Send(command);
 
             return Ok(new ApiResponse(200, "Logged out from all devices."));
         }
@@ -100,7 +119,8 @@ namespace Ewan.API.Controllers
             if (string.IsNullOrWhiteSpace(deviceId))
                 return BadRequest(new ApiResponse(400, "DeviceId is required."));
 
-            await _authService.LogoutOtherDevicesAsync(userId, userType, deviceId, GetIpAddress());
+            var command = new LogoutOtherDevicesCommand(userId, userType, deviceId, GetIpAddress());
+            await _mediator.Send(command);
 
             return Ok(new ApiResponse(200, "Logged out from other devices."));
         }
