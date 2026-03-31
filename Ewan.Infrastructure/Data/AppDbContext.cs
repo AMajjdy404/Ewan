@@ -11,6 +11,12 @@ namespace Ewan.Infrastructure.Data
         public DbSet<Client> Clients { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<ClientPasswordResetToken> ClientPasswordResetTokens { get; set; }
+        public DbSet<Property> Properties { get; set; }
+        public DbSet<Facility> Facilities { get; set; }
+        public DbSet<PropertyFacility> PropertyFacilities { get; set; }
+        public DbSet<PropertyGroup> PropertyGroups { get; set; }
+        public DbSet<PropertyImage> PropertyImages { get; set; }
+
 
         public AppDbContext(DbContextOptions<AppDbContext> options):base(options)
         {
