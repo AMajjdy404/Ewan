@@ -1,7 +1,8 @@
 ﻿using Ewan.Core.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
-namespace Ewan.API.Helpers
+namespace Ewan.Application.Helpers
 {
     public class DataSeeder
     {

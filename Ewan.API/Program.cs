@@ -1,8 +1,8 @@
 
 using Ewan.API.Extensions;
-using Ewan.API.Helpers;
 using Ewan.API.Middlewares;
 using Ewan.Application;
+using Ewan.Application.Helpers;
 using Ewan.Infrastructure.Data;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;

@@ -1,4 +1,6 @@
-﻿namespace Ewan.API.Helpers
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Ewan.Application.Helpers
 {
     public static class DocumentSettings
     {
