@@ -8,18 +8,19 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
+using CoreClient = global::Ewan.Core.Models.Client;
 
 namespace Ewan.Application.Features.Auth.Commands.ResetClientPassword
 {
     public class ResetClientPasswordCommandHandler : IRequestHandler<ResetClientPasswordCommand, Unit>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IPasswordHasher<Client> _passwordHasher;
+        private readonly IPasswordHasher<CoreClient> _passwordHasher;
         private readonly ITokenService _tokenService;
 
         public ResetClientPasswordCommandHandler(
             IUnitOfWork unitOfWork,
-            IPasswordHasher<Client> passwordHasher,
+            IPasswordHasher<CoreClient> passwordHasher,
             ITokenService tokenService)
         {
             _unitOfWork = unitOfWork;
@@ -31,7 +32,7 @@ namespace Ewan.Application.Features.Auth.Commands.ResetClientPassword
         {
             var request = command.Request;
 
-            var clientRepo = _unitOfWork.Repository<Client>();
+            var clientRepo = _unitOfWork.Repository<global::Ewan.Core.Models.Client>();
             var resetTokenRepo = _unitOfWork.Repository<ClientPasswordResetToken>();
 
             var client = await clientRepo.GetEntityWithSpec(

@@ -7,19 +7,20 @@ using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using CoreClient = global::Ewan.Core.Models.Client;
 
 namespace Ewan.Application.Features.Auth.Commands.LoginClient
 {
     public class LoginClientCommandHandler : IRequestHandler<LoginClientCommand, AuthResponseDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IPasswordHasher<Client> _passwordHasher;
+        private readonly IPasswordHasher<CoreClient> _passwordHasher;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _configuration;
 
         public LoginClientCommandHandler(
             IUnitOfWork unitOfWork,
-            IPasswordHasher<Client> passwordHasher,
+            IPasswordHasher<CoreClient> passwordHasher,
             ITokenService tokenService,
             IConfiguration configuration)
         {
@@ -32,7 +33,7 @@ namespace Ewan.Application.Features.Auth.Commands.LoginClient
         public async Task<AuthResponseDto> Handle(LoginClientCommand command, CancellationToken cancellationToken)
         {
             var request = command.Request;
-            var clientRepo = _unitOfWork.Repository<Client>();
+            var clientRepo = _unitOfWork.Repository<global::Ewan.Core.Models.Client>();
 
             var client = await clientRepo.GetEntityWithSpec(
                 new ClientByEmailSpecification(request.Email.Trim()));

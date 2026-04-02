@@ -2,6 +2,7 @@
 using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
 {
@@ -20,6 +21,24 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
             if (!groupExists)
                 throw new KeyNotFoundException("Property group not found.");
 
+            var requestedFacilityIds = command.Request.FacilityIds
+                .Distinct()
+                .ToList();
+
+            if (requestedFacilityIds.Count > 0)
+            {
+                var existingFacilityIds = (await _unitOfWork.Repository<Facility>().ListAllAsync())
+                    .Select(x => x.Id)
+                    .ToHashSet();
+
+                var invalidFacilityIds = requestedFacilityIds
+                    .Where(x => !existingFacilityIds.Contains(x))
+                    .ToList();
+
+                if (invalidFacilityIds.Count > 0)
+                    throw new BadHttpRequestException($"Invalid facility ids: {string.Join(", ", invalidFacilityIds)}");
+            }
+
             var imageUrls = new List<string>();
             foreach (var file in command.Request.Images)
             {
@@ -30,6 +49,7 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
             var property = new Property
             {
                 Name = command.Request.Name.Trim(),
+                Description = command.Request.Description.Trim(),
                 GroupId = command.Request.GroupId,
                 Address = command.Request.Address.Trim(),
                 Location = command.Request.Location.Trim(),
@@ -40,7 +60,7 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
                 Images = imageUrls
                     .Select(url => new PropertyImage { ImageUrl = url })
                     .ToList(),
-                PropertyFacilities = command.Request.FacilityIds
+                PropertyFacilities = requestedFacilityIds
                     .Select(fId => new PropertyFacility { FacilityId = fId })
                     .ToList()
             };

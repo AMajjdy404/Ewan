@@ -25,7 +25,7 @@ namespace Ewan.Application.Features.Auth.Commands.RequestClientPasswordReset
             if (string.IsNullOrWhiteSpace(command.Request.Email))
                 return Unit.Value;
 
-            var clientRepo = _unitOfWork.Repository<Client>();
+            var clientRepo = _unitOfWork.Repository<global::Ewan.Core.Models.Client>();
             var resetTokenRepo = _unitOfWork.Repository<ClientPasswordResetToken>();
 
             var client = await clientRepo.GetEntityWithSpec(

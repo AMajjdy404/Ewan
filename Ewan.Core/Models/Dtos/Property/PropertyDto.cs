@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
+        public string Description { get; set; } = string.Empty;
         public int GroupId { get; set; }
         public string GroupName { get; set; } = null!;
         public bool IsAvailable { get; set; }

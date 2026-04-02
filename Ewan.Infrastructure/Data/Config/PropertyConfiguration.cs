@@ -12,6 +12,10 @@ namespace Ewan.Infrastructure.Data.Config
                 .IsRequired()
                 .HasMaxLength(200);
 
+            builder.Property(x => x.Description)
+                .IsRequired()
+                .HasMaxLength(2000);
+
             builder.Property(x => x.Address)
                 .IsRequired()
                 .HasMaxLength(500);

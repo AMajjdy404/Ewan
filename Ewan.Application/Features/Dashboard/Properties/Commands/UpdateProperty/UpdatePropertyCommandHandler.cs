@@ -46,6 +46,7 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
             }
 
             property.Name = command.Request.Name.Trim();
+            property.Description = command.Request.Description.Trim();
             property.GroupId = command.Request.GroupId;
             property.IsAvailable = command.Request.IsAvailable;
             property.Address = command.Request.Address.Trim();

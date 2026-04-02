@@ -1,7 +1,7 @@
-﻿using Ewan.API.Helpers;
-using Ewan.Application;
+﻿using Ewan.Application;
 using Ewan.Application.Behaviors.Ewan.Application.Behaviors;
 using Ewan.Application.Features.Auth.Commands.RegisterClient.Ewan.Application.Features.Auth.Commands.RegisterClient;
+using Ewan.Application.Helpers;
 using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
 using Ewan.Core.Models.Dtos.Mail;
@@ -10,6 +10,7 @@ using Ewan.Infrastructure.ReposAndSpecs;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using CoreClient = Ewan.Core.Models.Client;
 
 namespace Ewan.API.Extensions
 {
@@ -23,7 +24,7 @@ namespace Ewan.API.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IMailService, MailService>();
             services.AddScoped<DataSeeder>();
-            services.AddScoped<IPasswordHasher<Client>, PasswordHasher<Client>>();
+            services.AddScoped<IPasswordHasher<CoreClient>, PasswordHasher<CoreClient>>();
 
             services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
 

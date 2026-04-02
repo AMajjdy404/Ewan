@@ -8,6 +8,7 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
         {
             RuleFor(x => x.Request.Id).GreaterThan(0);
             RuleFor(x => x.Request.Name).NotEmpty().MaximumLength(200);
+            RuleFor(x => x.Request.Description).NotEmpty().MaximumLength(2000);
             RuleFor(x => x.Request.GroupId).GreaterThan(0);
             RuleFor(x => x.Request.Address).NotEmpty().MaximumLength(500);
             RuleFor(x => x.Request.Location).NotEmpty();

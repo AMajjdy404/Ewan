@@ -87,6 +87,72 @@ namespace Ewan.Infrastructure.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Ewan.Core.Models.Booking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CheckInDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CheckOutDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GuestsCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NightsCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("PricePerNight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoomsCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("PropertyId");
+
+                    b.ToTable("Bookings");
+                });
+
             modelBuilder.Entity("Ewan.Core.Models.Client", b =>
                 {
                     b.Property<int>("Id")
@@ -116,6 +182,33 @@ namespace Ewan.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("Ewan.Core.Models.ClientFavoriteProperty", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("ClientId", "PropertyId")
+                        .IsUnique();
+
+                    b.ToTable("ClientFavoriteProperties");
                 });
 
             modelBuilder.Entity("Ewan.Core.Models.ClientPasswordResetToken", b =>
@@ -191,6 +284,11 @@ namespace Ewan.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
@@ -277,6 +375,43 @@ namespace Ewan.Infrastructure.Data.Migrations
                     b.HasIndex("PropertyId");
 
                     b.ToTable("PropertyImages");
+                });
+
+            modelBuilder.Entity("Ewan.Core.Models.PropertyRating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rate")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("ClientId", "PropertyId")
+                        .IsUnique();
+
+                    b.ToTable("PropertyRatings");
                 });
 
             modelBuilder.Entity("Ewan.Core.Models.RefreshToken", b =>
@@ -492,6 +627,44 @@ namespace Ewan.Infrastructure.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Ewan.Core.Models.Booking", b =>
+                {
+                    b.HasOne("Ewan.Core.Models.Client", "Client")
+                        .WithMany("Bookings")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Ewan.Core.Models.Property", "Property")
+                        .WithMany("Bookings")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Property");
+                });
+
+            modelBuilder.Entity("Ewan.Core.Models.ClientFavoriteProperty", b =>
+                {
+                    b.HasOne("Ewan.Core.Models.Client", "Client")
+                        .WithMany("FavoriteProperties")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ewan.Core.Models.Property", "Property")
+                        .WithMany("FavoritedByClients")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Property");
+                });
+
             modelBuilder.Entity("Ewan.Core.Models.Property", b =>
                 {
                     b.HasOne("Ewan.Core.Models.PropertyGroup", "Group")
@@ -529,6 +702,25 @@ namespace Ewan.Infrastructure.Data.Migrations
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Property");
+                });
+
+            modelBuilder.Entity("Ewan.Core.Models.PropertyRating", b =>
+                {
+                    b.HasOne("Ewan.Core.Models.Client", "Client")
+                        .WithMany("Ratings")
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ewan.Core.Models.Property", "Property")
+                        .WithMany("Ratings")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
 
                     b.Navigation("Property");
                 });
@@ -584,6 +776,15 @@ namespace Ewan.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Ewan.Core.Models.Client", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("FavoriteProperties");
+
+                    b.Navigation("Ratings");
+                });
+
             modelBuilder.Entity("Ewan.Core.Models.Facility", b =>
                 {
                     b.Navigation("PropertyFacilities");
@@ -591,9 +792,15 @@ namespace Ewan.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Ewan.Core.Models.Property", b =>
                 {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("FavoritedByClients");
+
                     b.Navigation("Images");
 
                     b.Navigation("PropertyFacilities");
+
+                    b.Navigation("Ratings");
                 });
 
             modelBuilder.Entity("Ewan.Core.Models.PropertyGroup", b =>

@@ -6,6 +6,7 @@ namespace Ewan.Core.Models.Dtos.Property
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
+        public string Description { get; set; } = string.Empty;
         public int GroupId { get; set; }
         public bool IsAvailable { get; set; }
         public string Address { get; set; } = null!;

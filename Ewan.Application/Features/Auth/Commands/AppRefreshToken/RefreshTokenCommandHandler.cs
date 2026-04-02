@@ -67,7 +67,7 @@ namespace Ewan.Application.Features.Auth.Commands.AppRefreshToken
             }
             else if (storedToken.UserType == "Client")
             {
-                var clientRepo = _unitOfWork.Repository<Client>();
+                var clientRepo = _unitOfWork.Repository<global::Ewan.Core.Models.Client>();
 
                 if (int.TryParse(storedToken.OwnerId, out var clientId))
                 {

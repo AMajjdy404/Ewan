@@ -26,6 +26,7 @@ namespace Ewan.Application.Features.Dashboard.Properties.Queries.GetPropertyById
             {
                 Id = property.Id,
                 Name = property.Name,
+                Description = property.Description,
                 GroupId = property.GroupId,
                 GroupName = property.Group.Name,
                 IsAvailable = property.IsAvailable,

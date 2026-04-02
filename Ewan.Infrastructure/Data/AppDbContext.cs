@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using System.Reflection.Emit;
 
 namespace Ewan.Infrastructure.Data
 {
@@ -16,6 +15,9 @@ namespace Ewan.Infrastructure.Data
         public DbSet<PropertyFacility> PropertyFacilities { get; set; }
         public DbSet<PropertyGroup> PropertyGroups { get; set; }
         public DbSet<PropertyImage> PropertyImages { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<ClientFavoriteProperty> ClientFavoriteProperties { get; set; }
+        public DbSet<PropertyRating> PropertyRatings { get; set; }
 
 
         public AppDbContext(DbContextOptions<AppDbContext> options):base(options)

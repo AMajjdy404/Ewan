@@ -5,6 +5,7 @@ namespace Ewan.Core.Models.Dtos.Property
     public class CreatePropertyRequestDto
     {
         public string Name { get; set; } = null!;
+        public string Description { get; set; } = string.Empty;
         public int GroupId { get; set; }
         public string Address { get; set; } = null!;
         public string Location { get; set; } = null!;

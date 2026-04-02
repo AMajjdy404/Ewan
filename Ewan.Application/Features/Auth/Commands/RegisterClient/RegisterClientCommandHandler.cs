@@ -6,6 +6,7 @@ using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using CoreClient = global::Ewan.Core.Models.Client;
 
 namespace Ewan.Application.Features.Auth.Commands.RegisterClient
 {
@@ -15,13 +16,13 @@ namespace Ewan.Application.Features.Auth.Commands.RegisterClient
         public class RegisterClientCommandHandler : IRequestHandler<RegisterClientCommand, AuthResponseDto>
         {
             private readonly IUnitOfWork _unitOfWork;
-            private readonly IPasswordHasher<Client> _passwordHasher;
+            private readonly IPasswordHasher<CoreClient> _passwordHasher;
             private readonly ITokenService _tokenService;
             private readonly IConfiguration _configuration;
 
             public RegisterClientCommandHandler(
                 IUnitOfWork unitOfWork,
-                IPasswordHasher<Client> passwordHasher,
+                IPasswordHasher<CoreClient> passwordHasher,
                 ITokenService tokenService,
                 IConfiguration configuration)
             {
@@ -35,7 +36,7 @@ namespace Ewan.Application.Features.Auth.Commands.RegisterClient
             {
                 var request = command.Request;
 
-                var clientRepo = _unitOfWork.Repository<Client>();
+                var clientRepo = _unitOfWork.Repository<global::Ewan.Core.Models.Client>();
 
                 var existingClient = await clientRepo.GetEntityWithSpec(
                     new ClientByEmailSpecification(request.Email.Trim()));
@@ -43,7 +44,7 @@ namespace Ewan.Application.Features.Auth.Commands.RegisterClient
                 if (existingClient != null)
                     throw new InvalidOperationException("Email is already registered.");
 
-                var client = new Client
+                var client = new global::Ewan.Core.Models.Client
                 {
                     FullName = request.FullName.Trim(),
                     Email = request.Email.Trim(),
