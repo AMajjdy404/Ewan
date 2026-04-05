@@ -1,5 +1,6 @@
 using Ewan.API.Errors;
 using Ewan.Application.Features.Client.Profile.Queries.GetClientProfile;
+using Ewan.Application.Features.Client.Profile.Commands.DeleteClientAccount;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,14 @@ namespace Ewan.API.Controllers
             var clientId = GetClientId();
             var result = await _mediator.Send(new GetClientProfileQuery(clientId));
             return Ok(new ApiResponse(200, "Client profile retrieved successfully.", result));
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var clientId = GetClientId();
+            await _mediator.Send(new DeleteClientAccountCommand(clientId));
+            return Ok(new ApiResponse(200, "Client account deleted successfully."));
         }
 
         private int GetClientId()

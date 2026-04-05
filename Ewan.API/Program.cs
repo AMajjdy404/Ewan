@@ -24,8 +24,15 @@ namespace Ewan.API
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "Ewan API",
-                    Version = "v1"
+                    Title = "EWAN API",
+                    Version = "v1",
+                    Description = "This is API for Ewan Hotel Management System",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Abdalla Magdy",
+                        Email = "abdullamajdy493@gmail.com",
+                        Url = new Uri("https://www.linkedin.com/in/abdalla-magdy-5437a4293")
+                    }
                 });
 
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

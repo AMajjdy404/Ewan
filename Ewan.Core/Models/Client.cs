@@ -8,6 +8,8 @@
         public string? PhoneNumber { get; set; }
         public string PasswordHash { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAt { get; set; }
 
         public ICollection<Booking> Bookings { get; set; } = new HashSet<Booking>();
         public ICollection<ClientFavoriteProperty> FavoriteProperties { get; set; } = new HashSet<ClientFavoriteProperty>();

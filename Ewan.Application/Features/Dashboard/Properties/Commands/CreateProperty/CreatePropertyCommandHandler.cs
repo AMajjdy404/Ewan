@@ -3,6 +3,7 @@ using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using BCrypt.Net;
 
 namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
 {
@@ -16,10 +17,17 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
 
         public async Task<int> Handle(CreatePropertyCommand command, CancellationToken cancellationToken)
         {
+            var ownerPhoneNumber = command.Request.OwnerPhoneNumber.Trim();
+
             var groupExists = await _unitOfWork.Repository<PropertyGroup>()
                 .AnyAsync(g => g.Id == command.Request.GroupId);
             if (!groupExists)
                 throw new KeyNotFoundException("Property group not found.");
+
+            var ownerPhoneExists = await _unitOfWork.Repository<Property>()
+                .AnyAsync(p => p.OwnerPhoneNumber == ownerPhoneNumber);
+            if (ownerPhoneExists)
+                throw new BadHttpRequestException("Owner phone number already assigned to another property.");
 
             var requestedFacilityIds = command.Request.FacilityIds
                 .Distinct()
@@ -50,6 +58,8 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
             {
                 Name = command.Request.Name.Trim(),
                 Description = command.Request.Description.Trim(),
+                OwnerPhoneNumber = ownerPhoneNumber,
+                OwnerPasswordHash = BCrypt.Net.BCrypt.HashPassword(command.Request.OwnerPassword.Trim()),
                 GroupId = command.Request.GroupId,
                 Address = command.Request.Address.Trim(),
                 Location = command.Request.Location.Trim(),

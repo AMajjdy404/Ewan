@@ -3,6 +3,7 @@ using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
 using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Ewan.Application.Features.Dashboard.Properties.Commands.DeleteProperty
 {
@@ -22,11 +23,22 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.DeleteProperty
             if (property == null)
                 throw new KeyNotFoundException("Property not found.");
 
-            foreach (var img in property.Images)
-                DocumentSettings.DeleteFile(img.ImageUrl, "Properties");
+            var hasBookings = await _unitOfWork.Repository<Booking>()
+                .AnyAsync(x => x.PropertyId == command.Id);
+
+            if (hasBookings)
+                throw new BadHttpRequestException("Cannot delete property because it has related bookings.");
+
+            var imageUrls = property.Images
+                .Select(x => x.ImageUrl)
+                .ToList();
 
             _unitOfWork.Repository<Property>().Delete(property);
             await _unitOfWork.SaveChangesAsync();
+
+            foreach (var imageUrl in imageUrls)
+                DocumentSettings.DeleteFile(imageUrl, "Properties");
+
             return true;
         }
     }

@@ -6,7 +6,7 @@ namespace Ewan.Infrastructure.ReposAndSpecs
     public class ClientByEmailSpecification : BaseSpecification<Client>
     {
         public ClientByEmailSpecification(string email)
-            : base(x => x.Email == email)
+            : base(x => x.Email == email && !x.IsDeleted)
         {
         }
     }

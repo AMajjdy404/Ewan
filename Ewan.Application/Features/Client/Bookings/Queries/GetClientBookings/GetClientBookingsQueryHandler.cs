@@ -4,16 +4,19 @@ using Ewan.Core.Models.Dtos;
 using Ewan.Core.Models.Dtos.Booking;
 using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 
 namespace Ewan.Application.Features.Client.Bookings.Queries.GetClientBookings
 {
     public class GetClientBookingsQueryHandler : IRequestHandler<GetClientBookingsQuery, Pagination<ClientBookingDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly string _baseApiUrl;
 
-        public GetClientBookingsQueryHandler(IUnitOfWork unitOfWork)
+        public GetClientBookingsQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
+            _baseApiUrl = configuration["BaseApiUrl"] ?? string.Empty;
         }
 
         public async Task<Pagination<ClientBookingDto>> Handle(GetClientBookingsQuery request, CancellationToken cancellationToken)
@@ -29,7 +32,7 @@ namespace Ewan.Application.Features.Client.Bookings.Queries.GetClientBookings
                 Id = x.Id,
                 PropertyId = x.PropertyId,
                 PropertyName = x.Property.Name,
-                PropertyMainImage = x.Property.Images.OrderBy(i => i.Id).Select(i => i.ImageUrl).FirstOrDefault(),
+                PropertyMainImage = x.Property.Images.OrderBy(i => i.Id).Select(i => ToAbsoluteImageUrl(i.ImageUrl)).FirstOrDefault(),
                 CheckInDate = x.CheckInDate,
                 CheckOutDate = x.CheckOutDate,
                 NightsCount = x.NightsCount,
@@ -49,6 +52,20 @@ namespace Ewan.Application.Features.Client.Bookings.Queries.GetClientBookings
                 request.Params.PageSize,
                 totalCount,
                 data);
+        }
+
+        private string ToAbsoluteImageUrl(string imageUrl)
+        {
+            if (string.IsNullOrWhiteSpace(imageUrl))
+                return imageUrl;
+
+            if (Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
+                return imageUrl;
+
+            if (string.IsNullOrWhiteSpace(_baseApiUrl))
+                return imageUrl;
+
+            return $"{_baseApiUrl.TrimEnd('/')}/{imageUrl.TrimStart('/')}";
         }
     }
 }

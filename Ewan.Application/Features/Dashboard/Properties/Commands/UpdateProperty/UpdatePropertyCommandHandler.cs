@@ -3,6 +3,7 @@ using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
 using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
 {
@@ -27,6 +28,30 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
             if (!groupExists)
                 throw new KeyNotFoundException("Property group not found.");
 
+            var ownerPhoneNumber = command.Request.OwnerPhoneNumber.Trim();
+            var ownerPhoneExists = await _unitOfWork.Repository<Property>()
+                .AnyAsync(p => p.OwnerPhoneNumber == ownerPhoneNumber && p.Id != property.Id);
+            if (ownerPhoneExists)
+                throw new BadHttpRequestException("Owner phone number already assigned to another property.");
+
+            var requestedFacilityIds = command.Request.FacilityIds
+                .Distinct()
+                .ToList();
+
+            if (requestedFacilityIds.Count > 0)
+            {
+                var existingFacilityIds = (await _unitOfWork.Repository<Facility>().ListAllAsync())
+                    .Select(x => x.Id)
+                    .ToHashSet();
+
+                var invalidFacilityIds = requestedFacilityIds
+                    .Where(x => !existingFacilityIds.Contains(x))
+                    .ToList();
+
+                if (invalidFacilityIds.Count > 0)
+                    throw new BadHttpRequestException($"Invalid facility ids: {string.Join(", ", invalidFacilityIds)}");
+            }
+
             // احذف الصور القديمة اللي مش موجودة في ExistingImageUrls
             var imagesToDelete = property.Images
                 .Where(img => !command.Request.ExistingImageUrls.Contains(img.ImageUrl))
@@ -47,6 +72,7 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
 
             property.Name = command.Request.Name.Trim();
             property.Description = command.Request.Description.Trim();
+            property.OwnerPhoneNumber = ownerPhoneNumber;
             property.GroupId = command.Request.GroupId;
             property.IsAvailable = command.Request.IsAvailable;
             property.Address = command.Request.Address.Trim();
@@ -55,8 +81,11 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
             property.RoomCount = command.Request.RoomCount;
             property.GuestCount = command.Request.GuestCount;
 
+            if (!string.IsNullOrWhiteSpace(command.Request.OwnerPassword))
+                property.OwnerPasswordHash = BCrypt.Net.BCrypt.HashPassword(command.Request.OwnerPassword.Trim());
+
             property.PropertyFacilities.Clear();
-            foreach (var fId in command.Request.FacilityIds)
+            foreach (var fId in requestedFacilityIds)
                 property.PropertyFacilities.Add(new PropertyFacility { FacilityId = fId });
 
             _unitOfWork.Repository<Property>().Update(property);

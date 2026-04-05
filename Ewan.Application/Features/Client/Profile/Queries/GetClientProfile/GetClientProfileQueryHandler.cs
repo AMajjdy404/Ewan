@@ -16,7 +16,7 @@ namespace Ewan.Application.Features.Client.Profile.Queries.GetClientProfile
         public async Task<ClientProfileDto> Handle(GetClientProfileQuery request, CancellationToken cancellationToken)
         {
             var client = await _unitOfWork.Repository<global::Ewan.Core.Models.Client>().GetByIdAsync(request.ClientId);
-            if (client == null)
+            if (client == null || client.IsDeleted)
                 throw new KeyNotFoundException("Client not found.");
 
             return new ClientProfileDto

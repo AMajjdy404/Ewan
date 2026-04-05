@@ -3,15 +3,19 @@ using Ewan.Core.Models;
 using Ewan.Core.Models.Dtos.Property;
 using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 
 namespace Ewan.Application.Features.Dashboard.Properties.Queries.GetPropertyById
 {
     public class GetPropertyByIdQueryHandler : IRequestHandler<GetPropertyByIdQuery, PropertyDto>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public GetPropertyByIdQueryHandler(IUnitOfWork unitOfWork)
+        private readonly string _baseApiUrl;
+
+        public GetPropertyByIdQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
+            _baseApiUrl = configuration["BaseApiUrl"] ?? string.Empty;
         }
 
         public async Task<PropertyDto> Handle(GetPropertyByIdQuery request, CancellationToken cancellationToken)
@@ -27,6 +31,7 @@ namespace Ewan.Application.Features.Dashboard.Properties.Queries.GetPropertyById
                 Id = property.Id,
                 Name = property.Name,
                 Description = property.Description,
+                OwnerPhoneNumber = property.OwnerPhoneNumber,
                 GroupId = property.GroupId,
                 GroupName = property.Group.Name,
                 IsAvailable = property.IsAvailable,
@@ -35,9 +40,23 @@ namespace Ewan.Application.Features.Dashboard.Properties.Queries.GetPropertyById
                 PricePerNight = property.PricePerNight,
                 RoomCount = property.RoomCount,
                 GuestCount = property.GuestCount,
-                ImageUrls = property.Images.Select(i => i.ImageUrl).ToList(),
+                ImageUrls = property.Images.Select(i => ToAbsoluteImageUrl(i.ImageUrl)).ToList(),
                 Facilities = property.PropertyFacilities.Select(pf => pf.Facility.Name).ToList()
             };
+        }
+
+        private string ToAbsoluteImageUrl(string imageUrl)
+        {
+            if (string.IsNullOrWhiteSpace(imageUrl))
+                return imageUrl;
+
+            if (Uri.TryCreate(imageUrl, UriKind.Absolute, out _))
+                return imageUrl;
+
+            if (string.IsNullOrWhiteSpace(_baseApiUrl))
+                return imageUrl;
+
+            return $"{_baseApiUrl.TrimEnd('/')}/{imageUrl.TrimStart('/')}";
         }
     }
 }

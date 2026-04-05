@@ -2,6 +2,8 @@
 
 namespace Ewan.API.Middlewares
 {
+    using Microsoft.Data.SqlClient;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.IdentityModel.Tokens;
     using Serilog.Context;
     using System.Diagnostics;
@@ -79,24 +81,35 @@ namespace Ewan.API.Middlewares
                     ex.Message
                 ),
 
+                DbUpdateConcurrencyException => (
+                    StatusCodes.Status409Conflict,
+                    "The resource was modified by another process. Please refresh and try again."
+                ),
+
+                DbUpdateException dbUpdateEx => MapDbUpdateException(dbUpdateEx),
+
                 _ => (
                     StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred. Please try again later."
                 )
             };
 
+            var details = GetDetailedMessage(ex);
+
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/json";
 
             ApiErrorResponse response;
 
-            if (_env.IsDevelopment() && statusCode == StatusCodes.Status500InternalServerError)
+            if (statusCode == StatusCodes.Status500InternalServerError)
             {
-                response = new ApiErrorResponse(statusCode, message, ex.Message);
+                response = _env.IsDevelopment()
+                    ? new ApiErrorResponse(statusCode, message, details)
+                    : new ApiErrorResponse(statusCode, message);
             }
             else
             {
-                response = new ApiErrorResponse(statusCode, message);
+                response = new ApiErrorResponse(statusCode, message, details);
             }
 
             await WriteJsonResponse(context, response);
@@ -127,6 +140,49 @@ namespace Ewan.API.Middlewares
             {
                 _logger.LogError(ex, "An error occurred while processing the request.");
             }
+        }
+
+        private static (int statusCode, string message) MapDbUpdateException(DbUpdateException ex)
+        {
+            if (ex.InnerException is SqlException sqlException)
+            {
+                return sqlException.Number switch
+                {
+                    547 => (
+                        StatusCodes.Status409Conflict,
+                        "Operation failed بسبب ارتباط البيانات (Foreign Key constraint)."
+                    ),
+                    2601 or 2627 => (
+                        StatusCodes.Status409Conflict,
+                        "Operation failed بسبب تكرار قيمة يجب أن تكون فريدة (Unique constraint)."
+                    ),
+                    _ => (
+                        StatusCodes.Status400BadRequest,
+                        "Database update failed. Please check the submitted data."
+                    )
+                };
+            }
+
+            return (
+                StatusCodes.Status400BadRequest,
+                "Database update failed. Please check the submitted data."
+            );
+        }
+
+        private static string GetDetailedMessage(Exception ex)
+        {
+            var messages = new List<string>();
+            Exception? current = ex;
+
+            while (current != null)
+            {
+                if (!string.IsNullOrWhiteSpace(current.Message))
+                    messages.Add(current.Message);
+
+                current = current.InnerException;
+            }
+
+            return string.Join(" | ", messages.Distinct());
         }
     }
 }

@@ -2,6 +2,7 @@
 using Ewan.Application.Features.Auth.Commands.AppRefreshToken;
 using Ewan.Application.Features.Auth.Commands.LoginAppUser;
 using Ewan.Application.Features.Auth.Commands.LoginClient;
+using Ewan.Application.Features.Auth.Commands.LoginPropertyOwner;
 using Ewan.Application.Features.Auth.Commands.Logout;
 using Ewan.Application.Features.Auth.Commands.LogoutAllDevices;
 using Ewan.Application.Features.Auth.Commands.LogoutOtherDevices;
@@ -43,6 +44,15 @@ namespace Ewan.API.Controllers
             var result = await _mediator.Send(command);
 
             return Ok(new ApiResponse(200, "Client login successful.", result));
+        }
+
+        [HttpPost("property-owner-login")]
+        public async Task<IActionResult> PropertyOwnerLogin([FromBody] PropertyOwnerLoginRequestDto request)
+        {
+            var command = new LoginPropertyOwnerCommand(request);
+            var result = await _mediator.Send(command);
+
+            return Ok(new ApiResponse(200, "Property owner login successful.", result));
         }
 
         [HttpPost("client-register")]

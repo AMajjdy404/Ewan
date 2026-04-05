@@ -1,32 +1,40 @@
 using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
+using Ewan.Core.Models.Dtos;
 using Ewan.Core.Models.Dtos.Booking;
 using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 
-namespace Ewan.Application.Features.Dashboard.Bookings.Queries.GetBookingById
+namespace Ewan.Application.Features.PropertyOwner.Bookings.Queries.GetPropertyBookings
 {
-    public class GetBookingByIdQueryHandler : IRequestHandler<GetBookingByIdQuery, BookingDetailsDto>
+    public class GetPropertyBookingsQueryHandler : IRequestHandler<GetPropertyBookingsQuery, Pagination<BookingDetailsDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly string _baseApiUrl;
 
-        public GetBookingByIdQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration)
+        public GetPropertyBookingsQueryHandler(IUnitOfWork unitOfWork, IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
             _baseApiUrl = configuration["BaseApiUrl"] ?? string.Empty;
         }
 
-        public async Task<BookingDetailsDto> Handle(GetBookingByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Pagination<BookingDetailsDto>> Handle(GetPropertyBookingsQuery request, CancellationToken cancellationToken)
         {
-            var spec = new BookingWithDetailsSpecification(request.Id);
-            var booking = await _unitOfWork.Repository<Booking>().GetEntityWithSpec(spec);
+            var propertyId = request.RequesterPropertyId;
 
-            if (booking == null)
-                throw new KeyNotFoundException("Booking not found.");
+            var propertyExists = await _unitOfWork.Repository<Property>().AnyAsync(x => x.Id == propertyId);
+            if (!propertyExists)
+                throw new KeyNotFoundException("Property not found.");
 
-            return new BookingDetailsDto
+            var spec = new PropertyBookingsWithDetailsSpecification(propertyId, request.Params);
+            var countSpec = new PropertyBookingsCountSpecification(propertyId);
+
+            var bookingRepo = _unitOfWork.Repository<Booking>();
+            var bookings = await bookingRepo.ListAsync(spec);
+            var totalCount = await bookingRepo.CountAsync(countSpec);
+
+            var data = bookings.Select(booking => new BookingDetailsDto
             {
                 Id = booking.Id,
                 ClientId = booking.ClientId,
@@ -53,7 +61,13 @@ namespace Ewan.Application.Features.Dashboard.Bookings.Queries.GetBookingById
                 CreatedAt = booking.CreatedAt,
                 CancelledAt = booking.CancelledAt,
                 CancellationReason = booking.CancellationReason
-            };
+            }).ToList();
+
+            return new Pagination<BookingDetailsDto>(
+                request.Params.PageIndex,
+                request.Params.PageSize,
+                totalCount,
+                data);
         }
 
         private string ToAbsoluteImageUrl(string imageUrl)

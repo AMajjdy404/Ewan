@@ -16,6 +16,17 @@ namespace Ewan.Infrastructure.Data.Config
                 .IsRequired()
                 .HasMaxLength(2000);
 
+            builder.Property(x => x.OwnerPhoneNumber)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            builder.Property(x => x.OwnerPasswordHash)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            builder.HasIndex(x => x.OwnerPhoneNumber)
+                .IsUnique();
+
             builder.Property(x => x.Address)
                 .IsRequired()
                 .HasMaxLength(500);

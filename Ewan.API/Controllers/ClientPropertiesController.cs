@@ -1,5 +1,6 @@
 using Ewan.API.Errors;
 using Ewan.Application.Features.Client.Properties.Commands.AddFavoriteProperty;
+using Ewan.Application.Features.Client.PropertyGroups.Queries.GetClientPropertyGroups;
 using Ewan.Application.Features.Client.Properties.Commands.RateProperty;
 using Ewan.Application.Features.Client.Properties.Commands.RemoveFavoriteProperty;
 using Ewan.Application.Features.Client.Properties.Queries.GetAllClientProperties;
@@ -22,6 +23,13 @@ namespace Ewan.API.Controllers
         public ClientPropertiesController(IMediator mediator)
         {
             _mediator = mediator;
+        }
+
+        [HttpGet("groups")]
+        public async Task<IActionResult> GetGroups()
+        {
+            var result = await _mediator.Send(new GetClientPropertyGroupsQuery());
+            return Ok(new ApiResponse(200, "Property groups retrieved successfully.", result));
         }
 
         [HttpGet]
