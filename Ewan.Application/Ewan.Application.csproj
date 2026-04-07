@@ -24,4 +24,9 @@
     <ProjectReference Include="..\Ewan.Infrastructure\Ewan.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Dashboard\PropertyGroups\Commands\CreatePropertyGroup\" />
+    <Folder Include="Features\Dashboard\PropertyGroups\Commands\UpdatePropertyGroup\" />
+  </ItemGroup>
+
 </Project>

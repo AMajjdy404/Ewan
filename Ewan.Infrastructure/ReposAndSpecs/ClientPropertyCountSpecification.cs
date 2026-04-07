@@ -12,7 +12,7 @@ namespace Ewan.Infrastructure.ReposAndSpecs
                  x.Name.Contains(filter.Search) ||
                  x.Address.Contains(filter.Search) ||
                  x.Location.Contains(filter.Search)) &&
-                (!filter.GroupId.HasValue || x.GroupId == filter.GroupId.Value) &&
+                (!filter.PropertyType.HasValue || x.PropertyType == filter.PropertyType.Value) &&
                 (!filter.MinAverageRate.HasValue ||
                  (x.Ratings.Any() && x.Ratings.Average(r => (double)r.Rate) >= filter.MinAverageRate.Value)))
         {

@@ -1,6 +1,9 @@
 ﻿using Ewan.Application.Helpers;
+using Ewan.Application.Helpers;
+using Ewan.Application.Helpers;
 using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
+using Ewan.Core.Models.Enums;
 using Ewan.Infrastructure.ReposAndSpecs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -23,10 +26,9 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
             if (property == null)
                 throw new KeyNotFoundException("Property not found.");
 
-            var groupExists = await _unitOfWork.Repository<PropertyGroup>()
-                .AnyAsync(g => g.Id == command.Request.GroupId);
-            if (!groupExists)
-                throw new KeyNotFoundException("Property group not found.");
+            var propertyType = command.Request.PropertyType;
+            var isHall = propertyType == PropertyType.Hall;
+            var bookingMode = PropertyBookingModeResolver.ResolveFromPropertyType(propertyType);
 
             var ownerPhoneNumber = command.Request.OwnerPhoneNumber.Trim();
             var ownerPhoneExists = await _unitOfWork.Repository<Property>()
@@ -73,12 +75,14 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
             property.Name = command.Request.Name.Trim();
             property.Description = command.Request.Description.Trim();
             property.OwnerPhoneNumber = ownerPhoneNumber;
-            property.GroupId = command.Request.GroupId;
+            property.PropertyType = propertyType;
+            property.BookingMode = bookingMode;
             property.IsAvailable = command.Request.IsAvailable;
             property.Address = command.Request.Address.Trim();
             property.Location = command.Request.Location.Trim();
-            property.PricePerNight = command.Request.PricePerNight;
-            property.RoomCount = command.Request.RoomCount;
+            property.PricePerNight = isHall ? 0 : command.Request.PricePerNight ?? 0;
+            property.PricePerHour = isHall ? command.Request.PricePerHour ?? 0 : 0;
+            property.RoomCount = isHall ? 0 : command.Request.RoomCount ?? 0;
             property.GuestCount = command.Request.GuestCount;
 
             if (!string.IsNullOrWhiteSpace(command.Request.OwnerPassword))

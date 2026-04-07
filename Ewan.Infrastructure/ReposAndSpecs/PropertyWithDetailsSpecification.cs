@@ -9,7 +9,6 @@ namespace Ewan.Infrastructure.ReposAndSpecs
         // GetAll with pagination
         public PropertyWithDetailsSpecification(PaginationParams paginationParams)
         {
-            AddInclude(p => p.Group);
             AddInclude(p => p.Images);
             AddInclude("PropertyFacilities.Facility");
             ApplyOrderBy(p => p.Id);
@@ -23,7 +22,6 @@ namespace Ewan.Infrastructure.ReposAndSpecs
         public PropertyWithDetailsSpecification(int id)
             : base(p => p.Id == id)
         {
-            AddInclude(p => p.Group);
             AddInclude(p => p.Images);
             AddInclude("PropertyFacilities.Facility");
         }

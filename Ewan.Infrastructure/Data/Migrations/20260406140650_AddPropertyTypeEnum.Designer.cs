@@ -4,6 +4,7 @@ using Ewan.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ewan.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260406140650_AddPropertyTypeEnum")]
+    partial class AddPropertyTypeEnum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -299,6 +302,9 @@ namespace Ewan.Infrastructure.Data.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
                     b.Property<int>("GuestCount")
                         .HasColumnType("int");
 
@@ -325,9 +331,6 @@ namespace Ewan.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<decimal>("PricePerHour")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("PricePerNight")
                         .HasColumnType("decimal(18,2)");
 
@@ -338,6 +341,8 @@ namespace Ewan.Infrastructure.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
 
                     b.HasIndex("OwnerPhoneNumber")
                         .IsUnique();
@@ -358,6 +363,24 @@ namespace Ewan.Infrastructure.Data.Migrations
                     b.HasIndex("FacilityId");
 
                     b.ToTable("PropertyFacilities");
+                });
+
+            modelBuilder.Entity("Ewan.Core.Models.PropertyGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PropertyGroups");
                 });
 
             modelBuilder.Entity("Ewan.Core.Models.PropertyImage", b =>
@@ -670,6 +693,17 @@ namespace Ewan.Infrastructure.Data.Migrations
                     b.Navigation("Property");
                 });
 
+            modelBuilder.Entity("Ewan.Core.Models.Property", b =>
+                {
+                    b.HasOne("Ewan.Core.Models.PropertyGroup", "Group")
+                        .WithMany("Properties")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+                });
+
             modelBuilder.Entity("Ewan.Core.Models.PropertyFacility", b =>
                 {
                     b.HasOne("Ewan.Core.Models.Facility", "Facility")
@@ -795,6 +829,11 @@ namespace Ewan.Infrastructure.Data.Migrations
                     b.Navigation("PropertyFacilities");
 
                     b.Navigation("Ratings");
+                });
+
+            modelBuilder.Entity("Ewan.Core.Models.PropertyGroup", b =>
+                {
+                    b.Navigation("Properties");
                 });
 #pragma warning restore 612, 618
         }

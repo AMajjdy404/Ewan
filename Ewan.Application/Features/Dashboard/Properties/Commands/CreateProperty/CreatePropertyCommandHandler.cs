@@ -1,6 +1,8 @@
 ﻿using Ewan.Application.Helpers;
+using Ewan.Application.Helpers;
 using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
+using Ewan.Core.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using BCrypt.Net;
@@ -18,11 +20,10 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
         public async Task<int> Handle(CreatePropertyCommand command, CancellationToken cancellationToken)
         {
             var ownerPhoneNumber = command.Request.OwnerPhoneNumber.Trim();
+            var propertyType = command.Request.PropertyType;
+            var isHall = propertyType == PropertyType.Hall;
 
-            var groupExists = await _unitOfWork.Repository<PropertyGroup>()
-                .AnyAsync(g => g.Id == command.Request.GroupId);
-            if (!groupExists)
-                throw new KeyNotFoundException("Property group not found.");
+            var bookingMode = PropertyBookingModeResolver.ResolveFromPropertyType(propertyType);
 
             var ownerPhoneExists = await _unitOfWork.Repository<Property>()
                 .AnyAsync(p => p.OwnerPhoneNumber == ownerPhoneNumber);
@@ -60,11 +61,13 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty
                 Description = command.Request.Description.Trim(),
                 OwnerPhoneNumber = ownerPhoneNumber,
                 OwnerPasswordHash = BCrypt.Net.BCrypt.HashPassword(command.Request.OwnerPassword.Trim()),
-                GroupId = command.Request.GroupId,
+                PropertyType = propertyType,
+                BookingMode = bookingMode,
                 Address = command.Request.Address.Trim(),
                 Location = command.Request.Location.Trim(),
-                PricePerNight = command.Request.PricePerNight,
-                RoomCount = command.Request.RoomCount,
+                PricePerNight = isHall ? 0 : command.Request.PricePerNight ?? 0,
+                PricePerHour = isHall ? command.Request.PricePerHour ?? 0 : 0,
+                RoomCount = isHall ? 0 : command.Request.RoomCount ?? 0,
                 GuestCount = command.Request.GuestCount,
                 IsAvailable = true,
                 Images = imageUrls

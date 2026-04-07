@@ -1,4 +1,5 @@
 ﻿using Ewan.Core.Models;
+using Ewan.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,6 +25,12 @@ namespace Ewan.Infrastructure.Data.Config
                 .IsRequired()
                 .HasMaxLength(200);
 
+            builder.Property(x => x.BookingMode)
+                .IsRequired();
+
+            builder.Property(x => x.PropertyType)
+                .IsRequired();
+
             builder.HasIndex(x => x.OwnerPhoneNumber)
                 .IsUnique();
 
@@ -38,10 +45,8 @@ namespace Ewan.Infrastructure.Data.Config
             builder.Property(x => x.PricePerNight)
                 .HasColumnType("decimal(18,2)");
 
-            builder.HasOne(x => x.Group)
-                .WithMany(x => x.Properties)
-                .HasForeignKey(x => x.GroupId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.PricePerHour)
+                .HasColumnType("decimal(18,2)");
         }
     }
 }

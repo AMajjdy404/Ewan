@@ -53,15 +53,22 @@ namespace Ewan.Application.Features.Dashboard.Overview.Queries.GetDashboardChart
             }
 
             var bookingsByCategoryRaw = await _dbContext.Bookings
-                .GroupBy(x => x.Property.Group.Name)
-                .Select(g => new { Name = g.Key, Count = g.Count() })
+                .GroupBy(x => x.Property.PropertyType)
+                .Select(g => new { PropertyType = g.Key, Count = g.Count() })
                 .OrderByDescending(x => x.Count)
                 .ToListAsync(cancellationToken);
 
             var totalCategoryBookings = bookingsByCategoryRaw.Sum(x => x.Count);
             var bookingsByCategory = bookingsByCategoryRaw.Select(x => new DashboardDistributionItemDto
             {
-                Name = x.Name,
+                Name = x.PropertyType switch
+                {
+                    Core.Models.Enums.PropertyType.Chalet => "ÔÇáíÉ",
+                    Core.Models.Enums.PropertyType.Hotel => "ÝäÏÞ",
+                    Core.Models.Enums.PropertyType.Apartment => "ÔÞÉ",
+                    Core.Models.Enums.PropertyType.Hall => "ÞÇÚÉ",
+                    _ => x.PropertyType.ToString()
+                },
                 Count = x.Count,
                 Percentage = totalCategoryBookings == 0 ? 0 : Math.Round((decimal)x.Count * 100 / totalCategoryBookings, 2)
             }).ToList();

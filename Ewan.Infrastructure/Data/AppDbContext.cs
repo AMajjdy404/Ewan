@@ -13,7 +13,6 @@ namespace Ewan.Infrastructure.Data
         public DbSet<Property> Properties { get; set; }
         public DbSet<Facility> Facilities { get; set; }
         public DbSet<PropertyFacility> PropertyFacilities { get; set; }
-        public DbSet<PropertyGroup> PropertyGroups { get; set; }
         public DbSet<PropertyImage> PropertyImages { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<ClientFavoriteProperty> ClientFavoriteProperties { get; set; }
