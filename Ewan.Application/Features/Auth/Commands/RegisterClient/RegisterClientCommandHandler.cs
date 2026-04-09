@@ -49,6 +49,7 @@ namespace Ewan.Application.Features.Auth.Commands.RegisterClient
                     FullName = request.FullName.Trim(),
                     Email = request.Email.Trim(),
                     PhoneNumber = request.PhoneNumber?.Trim(),
+                    IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
 

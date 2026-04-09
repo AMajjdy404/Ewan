@@ -2,7 +2,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Ewan.Application.Features.Dashboard.AppUsers.Commands.UpdateAppUser
 {
@@ -18,26 +17,29 @@ namespace Ewan.Application.Features.Dashboard.AppUsers.Commands.UpdateAppUser
 
         public async Task<bool> Handle(UpdateAppUserCommand command, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(command.Request.Id);
+            var userId = command.Request.Id.Trim();
+            var email = command.Request.Email.Trim();
+            var userName = command.Request.UserName.Trim();
+            var phoneNumber = command.Request.PhoneNumber.Trim();
+
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 throw new KeyNotFoundException("User not found.");
 
             if (!await _roleManager.RoleExistsAsync(command.Request.Role))
                 throw new BadHttpRequestException($"Role '{command.Request.Role}' does not exist.");
 
-            var emailExists = await _userManager.Users
-                .AnyAsync(u => u.Email == command.Request.Email && u.Id != command.Request.Id, cancellationToken);
-            if (emailExists)
+            var existingByEmail = await _userManager.FindByEmailAsync(email);
+            if (existingByEmail != null && existingByEmail.Id != user.Id)
                 throw new BadHttpRequestException("Email already exists.");
 
-            var userNameExists = await _userManager.Users
-                .AnyAsync(u => u.UserName == command.Request.UserName && u.Id != command.Request.Id, cancellationToken);
-            if (userNameExists)
+            var existingByUserName = await _userManager.FindByNameAsync(userName);
+            if (existingByUserName != null && existingByUserName.Id != user.Id)
                 throw new BadHttpRequestException("Username already exists.");
 
-            user.UserName = command.Request.UserName.Trim();
-            user.Email = command.Request.Email.Trim();
-            user.PhoneNumber = command.Request.PhoneNumber.Trim();
+            user.UserName = userName;
+            user.Email = email;
+            user.PhoneNumber = phoneNumber;
 
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)

@@ -3,8 +3,10 @@ using Ewan.Application.Features.Client.Properties.Commands.AddFavoriteProperty;
 using Ewan.Application.Features.Client.PropertyGroups.Queries.GetClientPropertyGroups;
 using Ewan.Application.Features.Client.Properties.Commands.RateProperty;
 using Ewan.Application.Features.Client.Properties.Commands.RemoveFavoriteProperty;
+using Ewan.Application.Features.Client.Properties.Queries.GetFavouriteClientProperties;
 using Ewan.Application.Features.Client.Properties.Queries.GetAllClientProperties;
 using Ewan.Application.Features.Client.Properties.Queries.GetPropertyRatings;
+using Ewan.Core.Models.Dtos;
 using Ewan.Core.Models.Dtos.Property;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -38,6 +40,14 @@ namespace Ewan.API.Controllers
             var clientId = GetClientId();
             var result = await _mediator.Send(new GetAllClientPropertiesQuery(clientId, param));
             return Ok(new ApiResponse(200, "Properties retrieved successfully.", result));
+        }
+
+        [HttpGet("favorites")]
+        public async Task<IActionResult> GetFavorites([FromQuery] PaginationParams param)
+        {
+            var clientId = GetClientId();
+            var result = await _mediator.Send(new GetFavouriteClientPropertiesQuery(clientId, param));
+            return Ok(new ApiResponse(200, "Favorite properties retrieved successfully.", result));
         }
 
         [HttpPost("{propertyId:int}/favorite")]

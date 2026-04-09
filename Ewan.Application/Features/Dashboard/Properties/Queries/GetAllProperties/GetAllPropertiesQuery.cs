@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Ewan.Application.Features.Dashboard.Properties.Queries.GetAllProperties
 {
-    public record GetAllPropertiesQuery(PaginationParams Params) : IRequest<Pagination<PropertyDto>>;
+    public record GetAllPropertiesQuery(DashboardPropertyFilterParams Params) : IRequest<DashboardPropertiesResultDto>;
 
 
 }

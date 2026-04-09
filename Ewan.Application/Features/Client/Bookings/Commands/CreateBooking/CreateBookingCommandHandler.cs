@@ -30,8 +30,13 @@ namespace Ewan.Application.Features.Client.Bookings.Commands.CreateBooking
                 throw new BadHttpRequestException("Guests count exceeds property capacity.");
 
             var bookingMode = property.BookingMode;
-            if (bookingMode == 0 && property.PropertyType != 0)
-                bookingMode = PropertyBookingModeResolver.ResolveFromPropertyType(property.PropertyType);
+            if (bookingMode == 0)
+            {
+                bookingMode = ResolveBookingModeFallback(property, command.Request.RoomsCount);
+                property.BookingMode = bookingMode;
+                _unitOfWork.Repository<Property>().Update(property);
+                await _unitOfWork.SaveChangesAsync();
+            }
 
             if (bookingMode == BookingMode.RoomBased)
             {
@@ -110,6 +115,20 @@ namespace Ewan.Application.Features.Client.Bookings.Commands.CreateBooking
             await _unitOfWork.SaveChangesAsync();
 
             return booking.Id;
+        }
+
+        private static BookingMode ResolveBookingModeFallback(Property property, int requestedRoomsCount)
+        {
+            if (property.PropertyType != 0)
+                return PropertyBookingModeResolver.ResolveFromPropertyType(property.PropertyType);
+
+            if (property.PricePerHour > 0 && property.RoomCount == 0)
+                return BookingMode.TimeSlot;
+
+            if (requestedRoomsCount > 0 && property.RoomCount > 0)
+                return BookingMode.RoomBased;
+
+            return BookingMode.ExclusiveStay;
         }
     }
 }

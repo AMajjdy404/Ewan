@@ -2,6 +2,7 @@
 using Ewan.Application.Features.Dashboard.AppUsers.Commands.CreateAppUser;
 using Ewan.Application.Features.Dashboard.AppUsers.Commands.DeleteAppUser;
 using Ewan.Application.Features.Dashboard.AppUsers.Commands.UpdateAppUser;
+using Ewan.Application.Features.Dashboard.AppUsers.Commands.UpdateAppUserPassword;
 using Ewan.Application.Features.Dashboard.AppUsers.Queries.GetAllAppUsers;
 using Ewan.Application.Features.Dashboard.AppUsers.Queries.GetAppUserById;
 using Ewan.Core.Models.Dtos;
@@ -56,6 +57,13 @@ namespace Ewan.API.Controllers
         {
             await _mediator.Send(new DeleteAppUserCommand(id));
             return Ok(new ApiResponse(200, "User deleted successfully."));
+        }
+
+        [HttpPatch("{id}/password")]
+        public async Task<IActionResult> UpdatePassword(string id, [FromBody] UpdateAppUserPasswordRequestDto request)
+        {
+            await _mediator.Send(new UpdateAppUserPasswordCommand(id, request));
+            return Ok(new ApiResponse(200, "User password updated successfully."));
         }
     }
 }

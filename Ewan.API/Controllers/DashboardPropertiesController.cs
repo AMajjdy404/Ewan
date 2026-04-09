@@ -2,9 +2,9 @@
 using Ewan.Application.Features.Dashboard.Properties.Commands.CreateProperty;
 using Ewan.Application.Features.Dashboard.Properties.Commands.DeleteProperty;
 using Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty;
+using Ewan.Application.Features.Dashboard.Properties.Commands.UpdatePropertyOwnerCredentials;
 using Ewan.Application.Features.Dashboard.Properties.Queries.GetAllProperties;
 using Ewan.Application.Features.Dashboard.Properties.Queries.GetPropertyById;
-using Ewan.Core.Models.Dtos;
 using Ewan.Core.Models.Dtos.Property;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +24,7 @@ namespace Ewan.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] PaginationParams param)
+        public async Task<IActionResult> GetAll([FromQuery] DashboardPropertyFilterParams param)
         {
             var result = await _mediator.Send(new GetAllPropertiesQuery(param));
             return Ok(new ApiResponse(200, "Properties retrieved successfully.", result));
@@ -49,6 +49,13 @@ namespace Ewan.API.Controllers
         {
             await _mediator.Send(new UpdatePropertyCommand(request));
             return Ok(new ApiResponse(200, "Property updated successfully."));
+        }
+
+        [HttpPatch("{id:int}/owner-credentials")]
+        public async Task<IActionResult> UpdateOwnerCredentials(int id, [FromBody] UpdatePropertyOwnerCredentialsRequestDto request)
+        {
+            await _mediator.Send(new UpdatePropertyOwnerCredentialsCommand(id, request));
+            return Ok(new ApiResponse(200, "Property owner credentials updated successfully."));
         }
 
         [HttpDelete("{id:int}")]

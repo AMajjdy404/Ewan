@@ -30,12 +30,6 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
             var isHall = propertyType == PropertyType.Hall;
             var bookingMode = PropertyBookingModeResolver.ResolveFromPropertyType(propertyType);
 
-            var ownerPhoneNumber = command.Request.OwnerPhoneNumber.Trim();
-            var ownerPhoneExists = await _unitOfWork.Repository<Property>()
-                .AnyAsync(p => p.OwnerPhoneNumber == ownerPhoneNumber && p.Id != property.Id);
-            if (ownerPhoneExists)
-                throw new BadHttpRequestException("Owner phone number already assigned to another property.");
-
             var requestedFacilityIds = command.Request.FacilityIds
                 .Distinct()
                 .ToList();
@@ -74,7 +68,6 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
 
             property.Name = command.Request.Name.Trim();
             property.Description = command.Request.Description.Trim();
-            property.OwnerPhoneNumber = ownerPhoneNumber;
             property.PropertyType = propertyType;
             property.BookingMode = bookingMode;
             property.IsAvailable = command.Request.IsAvailable;
@@ -84,9 +77,6 @@ namespace Ewan.Application.Features.Dashboard.Properties.Commands.UpdateProperty
             property.PricePerHour = isHall ? command.Request.PricePerHour ?? 0 : 0;
             property.RoomCount = isHall ? 0 : command.Request.RoomCount ?? 0;
             property.GuestCount = command.Request.GuestCount;
-
-            if (!string.IsNullOrWhiteSpace(command.Request.OwnerPassword))
-                property.OwnerPasswordHash = BCrypt.Net.BCrypt.HashPassword(command.Request.OwnerPassword.Trim());
 
             property.PropertyFacilities.Clear();
             foreach (var fId in requestedFacilityIds)

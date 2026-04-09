@@ -41,6 +41,9 @@ namespace Ewan.Application.Features.Auth.Commands.LoginClient
             if (client == null)
                 throw new UnauthorizedAccessException("Invalid credentials");
 
+            if (!client.IsActive)
+                throw new InvalidOperationException("حسابك غير نشط تواصل مع الدعم");
+
             var verifyResult = _passwordHasher.VerifyHashedPassword(client, client.PasswordHash, request.Password);
             if (verifyResult == PasswordVerificationResult.Failed)
                 throw new UnauthorizedAccessException("Invalid credentials");
