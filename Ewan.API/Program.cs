@@ -4,6 +4,8 @@ using Ewan.API.Middlewares;
 using Ewan.Application;
 using Ewan.Application.Helpers;
 using Ewan.Infrastructure.Data;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -17,6 +19,43 @@ namespace Ewan.API
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var firebaseCredentialsPath = builder.Configuration["Firebase:CredentialsPath"];
+            if (!string.IsNullOrWhiteSpace(firebaseCredentialsPath))
+            {
+                FirebaseApp? firebaseApp = null;
+                try
+                {
+                    firebaseApp = FirebaseApp.DefaultInstance;
+                }
+                catch
+                {
+                    firebaseApp = null;
+                }
+
+                if (firebaseApp == null)
+                {
+                    var resolvedCredentialsPath = Path.IsPathRooted(firebaseCredentialsPath)
+                        ? firebaseCredentialsPath
+                        : Path.Combine(builder.Environment.ContentRootPath, firebaseCredentialsPath);
+
+                    if (!File.Exists(resolvedCredentialsPath))
+                        throw new InvalidOperationException($"Firebase credentials file not found: {resolvedCredentialsPath}");
+
+                    try
+                    {
+                        FirebaseApp.Create(new AppOptions
+                        {
+                            Credential = GoogleCredential.FromFile(resolvedCredentialsPath)
+                        });
+                    }
+                    catch (Exception ex) when (
+                        ex is InvalidOperationException || ex is ArgumentException &&
+                        ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+                    {
+                    }
+                }
+            }
 
             // Add services to the container.
             builder.Services.AddControllers(options =>

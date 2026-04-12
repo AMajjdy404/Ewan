@@ -12,6 +12,10 @@ namespace Ewan.Application.Features.Auth.Commands.LoginClient
 
             RuleFor(x => x.Request.Password)
                 .NotEmpty();
+
+            RuleFor(x => x.Request.DeviceToken)
+                .MaximumLength(1000)
+                .When(x => !string.IsNullOrWhiteSpace(x.Request.DeviceToken));
         }
     }
 }

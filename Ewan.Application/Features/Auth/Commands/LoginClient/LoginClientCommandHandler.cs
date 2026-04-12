@@ -16,17 +16,20 @@ namespace Ewan.Application.Features.Auth.Commands.LoginClient
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher<CoreClient> _passwordHasher;
         private readonly ITokenService _tokenService;
+        private readonly IFirebaseNotificationService _firebaseNotificationService;
         private readonly IConfiguration _configuration;
 
         public LoginClientCommandHandler(
             IUnitOfWork unitOfWork,
             IPasswordHasher<CoreClient> passwordHasher,
             ITokenService tokenService,
+            IFirebaseNotificationService firebaseNotificationService,
             IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
+            _firebaseNotificationService = firebaseNotificationService;
             _configuration = configuration;
         }
 
@@ -47,6 +50,19 @@ namespace Ewan.Application.Features.Auth.Commands.LoginClient
             var verifyResult = _passwordHasher.VerifyHashedPassword(client, client.PasswordHash, request.Password);
             if (verifyResult == PasswordVerificationResult.Failed)
                 throw new UnauthorizedAccessException("Invalid credentials");
+
+            if (!string.IsNullOrWhiteSpace(request.DeviceToken))
+            {
+                var deviceToken = request.DeviceToken.Trim();
+                if (!string.Equals(client.DeviceToken, deviceToken, StringComparison.Ordinal))
+                {
+                    client.DeviceToken = deviceToken;
+                    clientRepo.Update(client);
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                await _firebaseNotificationService.SubscribeTokenToAllClientsTopicAsync(deviceToken, cancellationToken);
+            }
 
             var (accessToken, refreshToken) = await _tokenService.CreateTokenAsync(
                 client,

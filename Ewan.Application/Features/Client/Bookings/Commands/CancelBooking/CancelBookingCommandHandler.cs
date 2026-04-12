@@ -31,6 +31,7 @@ namespace Ewan.Application.Features.Client.Bookings.Commands.CancelBooking
                 throw new BadHttpRequestException("Completed booking cannot be cancelled.");
 
             booking.Status = BookingStatus.Cancelled;
+            booking.PaymentStatus = PaymentStatus.Failed;
             booking.CancelledAt = DateTime.UtcNow;
             booking.CancellationReason = command.Reason?.Trim();
             booking.UpdatedAt = DateTime.UtcNow;

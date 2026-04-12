@@ -1,5 +1,6 @@
 using Ewan.Core.Interfaces;
 using Ewan.Core.Models;
+using Ewan.Core.Models.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
@@ -25,7 +26,10 @@ namespace Ewan.Application.Features.Client.Profile.Commands.DeleteClientAccount
                 return;
 
             var hasActiveOrUpcomingBookings = await _unitOfWork.Repository<Booking>()
-                .AnyAsync(x => x.ClientId == request.ClientId && x.CheckOutDate.Date >= DateTime.UtcNow.Date);
+                .AnyAsync(x =>
+                    x.ClientId == request.ClientId &&
+                    x.Status != BookingStatus.Cancelled &&
+                    x.CheckOutDate.Date >= DateTime.UtcNow.Date);
 
             if (hasActiveOrUpcomingBookings)
                 throw new BadHttpRequestException("Cannot delete account while there are active or upcoming bookings.");

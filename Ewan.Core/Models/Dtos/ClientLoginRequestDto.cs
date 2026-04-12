@@ -7,5 +7,6 @@
         public bool RememberMe { get; set; }
         public string? DeviceInfo { get; set; }
         public string? DeviceId { get; set; }
+        public string? DeviceToken { get; set; }
     }
 }

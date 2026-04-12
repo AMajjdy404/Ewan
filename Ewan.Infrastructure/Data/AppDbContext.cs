@@ -17,6 +17,9 @@ namespace Ewan.Infrastructure.Data
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<ClientFavoriteProperty> ClientFavoriteProperties { get; set; }
         public DbSet<PropertyRating> PropertyRatings { get; set; }
+        public DbSet<ContactUsSetting> ContactUsSettings { get; set; }
+        public DbSet<Faq> Faqs { get; set; }
+        public DbSet<TermsAndConditionsSetting> TermsAndConditionsSettings { get; set; }
 
 
         public AppDbContext(DbContextOptions<AppDbContext> options):base(options)

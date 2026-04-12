@@ -23,6 +23,7 @@ namespace Ewan.API.Extensions
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IMailService, MailService>();
+            services.AddScoped<IFirebaseNotificationService, FirebaseNotificationService>();
             services.AddScoped<DataSeeder>();
             services.AddScoped<IPasswordHasher<CoreClient>, PasswordHasher<CoreClient>>();
 
