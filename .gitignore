@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Ewan.API/wwwroot/Images/Properties
+/Ewan.API/FirebaseConfig/ewan-bea90-firebase-adminsdk-fbsvc-12448eabdb.json
