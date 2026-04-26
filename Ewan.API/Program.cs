@@ -9,6 +9,8 @@ using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using System.Text.Json.Serialization;
 
 namespace Ewan.API
@@ -56,6 +58,20 @@ namespace Ewan.API
                     }
                 }
             }
+
+            builder.Host.UseSerilog((ctx, lc) => lc
+             .MinimumLevel.Information()
+             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+             .WriteTo.Console()
+             .WriteTo.File(
+                 path: Path.Combine(ctx.HostingEnvironment.ContentRootPath, "logs", "app-.log"),
+                 rollingInterval: RollingInterval.Day,
+                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+                 retainedFileCountLimit: 31)
+           .Enrich.FromLogContext()
+             .Enrich.WithMachineName()
+         );
 
             // Add services to the container.
             builder.Services.AddControllers(options =>
